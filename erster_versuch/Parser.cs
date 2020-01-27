@@ -12,10 +12,10 @@ namespace erster_versuch
         }
         public List<Image> Images { get; set; }
 
-        public void Parse(string  image_file, string label_file )
+        public void Parse(string  imageFile, string labelFile )
         {
-            byte[] labels = File.ReadAllBytes(label_file);
-            byte[] images = File.ReadAllBytes(image_file);
+            byte[] labels = File.ReadAllBytes(labelFile);
+            byte[] images = File.ReadAllBytes(imageFile);
             List<Image> imageList = new List<Image>();
             for (int i = 0; i < 60000; i++)
             {

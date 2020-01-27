@@ -1,43 +1,99 @@
 using System;
 using System.Collections.Generic;
+using MathNet.Numerics;
 
 namespace erster_versuch
 {
     public class Layer
     {
         public List<Neuron> Neurons { get; }
+        public int Index { get; }
+        private double learningRate;
 
-
-        public Layer(int capacity)
+        public Layer(int capacity, int index, double learningRate)
         {
+            Index = index;
+            this.learningRate = learningRate;
+
             Neurons = new List<Neuron>(capacity);
             for (int i = 0; i < capacity; i++)
             {
-                Neurons.Add(new Neuron());
+                Neurons.Add(new Neuron(capacity));
             }
         }
 
-        public void CalculateValues(Layer prev_layer = null, List<double> inputs = null)
+        public void CalculateValues(Layer prevLayer = null, List<double> inputs = null)
         {
-            if (prev_layer == null)
+            if (Index == 0)
             {
-                for (int i = 0; i < Neurons.Count; i++)
+                for (var i = 0; i < Neurons.Count; i++)
                 {
-                    Neurons[i].calculate_value(inputs)
+                    Neurons[i].Value = inputs[i];
                 }
             }
             else
             {
-                for(int i = 0; i<Neurons.Count;i++)
+                foreach (var neuron in Neurons)
                 {
-                    Neurons[i].calculate_value(prev_layer);
+                    neuron.calculate_value(prevLayer);
+                }
+            }
+        }
+
+        public double CalculateCost(int label)
+        {
+            double cost = 0;
+            for (int i = 0; i < Neurons.Count; i++)
+            {
+                cost += Math.Pow(Neurons[i].Value - (label == i ? 0 : 1),2);
+            }
+
+            return cost;
+        }
+        public void BackPropagate( double cost,  int layerSize, Layer prevLayer = null)
+        {
+            if (Index == layerSize - 1)
+            {
+                foreach (var neuron in Neurons)
+                {
+                    neuron.Bias  -= (cost / neuron.Value) * (neuron.Value / neuron.NetValue) * (neuron.NetValue / neuron.Bias);
+                    for (var j = 0; j < neuron.Weights.Count; j++)
+                    {
+                        neuron.Weights[j] -= (cost / neuron.Value) * (neuron.Value / neuron.NetValue) *
+                                             (neuron.NetValue / neuron.Weights[j]);
+                    }
+                
+                }
+            }
+            else
+            {
+                    
+                foreach (var neuron in Neurons)
+                {
+                    neuron.Bias  -= (cost / neuron.Value) * (neuron.Value / neuron.NetValue) * (neuron.NetValue / neuron.Bias);
+                    
+                    for (var j = 0; j < neuron.Weights.Count; j++)
+                    {
+                        
+                        for (int i = 0; i < prevLayer.Neurons.Count; i++)
+                        {
+                         neuron.Weights[j] -= (cost / neuron.Value) * (neuron.Value / neuron.NetValue) * (neuron.NetValue / neuron.Weights[j]);   
+                        }
+                    }
+                
                 }
             }
         }
         public override string ToString()
         {
-            return Neurons.ToString();
-        }    
+            string s = "{";
+            foreach (var neuron in Neurons)
+            {
+                s += neuron.ToString() + ";";
+            }
+
+            s += "};";
+            return s;
+        }
     }
-    
 }

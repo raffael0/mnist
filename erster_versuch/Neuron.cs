@@ -5,28 +5,43 @@ namespace erster_versuch
 {
     public class Neuron
     {
-        private List<double> weights;
-        private double bias;
+        public List<double> Weights { get; set; }
+        public double Bias { get; set; }
         public double Value { get; set; } = 0;
-
-
-        public double calculate_value(Layer prev_Layer)
+        
+        public double NetValue { get; set; }
+        public Neuron(int amountWeights)
         {
-            double temp_value = 0;
-            for (int i = 0; i < weights.Count; i++)
-                
+            Random r = new Random();
+            double minimum = -.5;
+            double maximum = 0.5;
+            weights = new List<double>();
+            for (int i = 0; i < amountWeights; i++)
             {
-                temp_value += weights[i] * prev_Layer.Neurons[i].Value;
+                weights.Add(r.NextDouble() * (maximum - minimum) + minimum);
             }
-            
-            Value = 1 / (1 + Math.Pow(Constants.E, -1*(temp_value+bias)));
-            return Value;
-            
         }
+
+        public double calculate_value(Layer prevLayer)
+        {
+            double tempValue = 0;
+            for (int i = 0; i < weights.Count; i++)
+
+            {
+                tempValue += weights[i] * prevLayer.Neurons[i].Value;
+            }
+
+            NetValue = tempValue;
+            Value = 1 / (1 + Math.Pow(Constants.E, -1 * (tempValue + bias)));
+            return Value;
+
+        }
+        
+        
 
         public override string ToString()
         {
-            return "";
+            return Value + "";
         }
     }
 }
