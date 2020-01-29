@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MathNet.Numerics;
 
 namespace erster_versuch
@@ -30,6 +31,10 @@ namespace erster_versuch
                 {
                     Neurons[i].Value = inputs[i];
                 }
+                Console.WriteLine(Environment.NewLine);
+                Console.WriteLine(ToString());
+                Console.WriteLine(Environment.NewLine);
+                Console.WriteLine(Environment.NewLine);
             }
             else
             {
@@ -38,51 +43,26 @@ namespace erster_versuch
                     neuron.calculate_value(prevLayer);
                 }
             }
+            
+
         }
 
-        public double CalculateCost(int label)
+        public double CalculateCost(double label)
         {
-            double cost = 0;
-            for (int i = 0; i < Neurons.Count; i++)
-            {
-                cost += Math.Pow(Neurons[i].Value - (label == i ? 0 : 1),2);
-            }
-
-            return cost;
-        }
-        public void BackPropagate( double cost,  int layerSize, Layer prevLayer = null)
+            return Neurons.Select((t, i) => Math.Pow(t.Value - (label == i ? 0 : 1), 2)).Sum();
+        }    
+        public void BackPropagate( double cost)
         {
-            if (Index == layerSize - 1)
+            foreach (var neuron in Neurons)
             {
-                foreach (var neuron in Neurons)
-                {
-                    neuron.Bias  -= (cost / neuron.Value) * (neuron.Value / neuron.NetValue) * (neuron.NetValue / neuron.Bias);
+                    neuron.Bias  -= ((cost / neuron.Value) * (neuron.Value / neuron.NetValue) * (neuron.NetValue / neuron.Bias));
+                    
                     for (var j = 0; j < neuron.Weights.Count; j++)
                     {
                         neuron.Weights[j] -= (cost / neuron.Value) * (neuron.Value / neuron.NetValue) *
                                              (neuron.NetValue / neuron.Weights[j]);
                     }
-                
-                }
-            }
-            else
-            {
-                    
-                foreach (var neuron in Neurons)
-                {
-                    neuron.Bias  -= (cost / neuron.Value) * (neuron.Value / neuron.NetValue) * (neuron.NetValue / neuron.Bias);
-                    
-                    for (var j = 0; j < neuron.Weights.Count; j++)
-                    {
-                        
-                        for (int i = 0; i < prevLayer.Neurons.Count; i++)
-                        {
-                         neuron.Weights[j] -= (cost / neuron.Value) * (neuron.Value / neuron.NetValue) * (neuron.NetValue / neuron.Weights[j]);   
-                        }
-                    }
-                
-                }
-            }
+            } 
         }
         public override string ToString()
         {

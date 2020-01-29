@@ -7,14 +7,15 @@ namespace erster_versuch
     public class Network
     {
         private List<Layer> _layers;
+        private double learningRate = 1;
         public Network(int inputs, int outputs, int hiddenLayers, int hiddenLayerSize) { 
             _layers = new List<Layer>(2+hiddenLayers);
-            _layers.Insert(0,new Layer(inputs,0));
+            _layers.Insert(0,new Layer(inputs,0,learningRate));
             for (int i = 1; i < hiddenLayers+1; i++)
             {
-                _layers.Add(new Layer(hiddenLayerSize,i)) ;
+                _layers.Add(new Layer(hiddenLayerSize,i,learningRate)) ;
             }
-            _layers.Add(new Layer(outputs,_layers.Count));
+            _layers.Add(new Layer(outputs,_layers.Count,learningRate));
 
         }
 
@@ -22,31 +23,33 @@ namespace erster_versuch
         {
             for (int i = 0; i < 10; i++)
             {
+                Console.WriteLine("Step: " + i);
                 Iterate(images[i].Inputs.ToList());
+
+                Console.WriteLine("Cost:" + back_propagate(images[i].LabelValue));
                 Print();
                 Console.Write(Environment.NewLine + Environment.NewLine + Environment.NewLine);
             }
         }
-        public void Iterate(List<double> inputs)
+
+        private void Iterate(List<double> inputs)
         {
             _layers[0].CalculateValues(null,inputs);
-            for (int i = 1; i < _layers.Count; i++)
+            for (var i = 1; i < _layers.Count-1; i++)
             {
-                _layers[i].CalculateValues(_layers[i-1]);
+                _layers[i].CalculateValues(_layers[i]);
             }
         }
-        private float  DotProduct(float inputValue, float weight)
+        public double back_propagate(double label)
         {
-            return inputValue * weight;
-        }
+            
+            var cost = _layers[^1].CalculateCost(label);
+            for (var i = _layers.Count-1; i > 1; i--)
+            {
+                _layers[i].BackPropagate(cost);
+            }
 
-        public void back_propagate(int layer)
-        {
-            var cost = _layers[^1].CalculateCost(layer);
-            for (int i = 0; i < _layers.Count; i++)
-            {
-                _layers[i].BackPropagate(layer,_layers.Count);
-            }
+            return cost;
         }
         private void Print()
         {
